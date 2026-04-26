@@ -82,7 +82,12 @@ func (b *Broker) handleRequest(w http.ResponseWriter, r *http.Request) {
 		timeoutStr := r.URL.Query().Get("timeout")
 		timeout := 0
 		if timeoutStr != "" {
-			timeout, _ = strconv.Atoi(timeoutStr)
+			var err error
+			timeout, err = strconv.Atoi(timeoutStr)
+			if err != nil {
+				http.Error(w, "invalid timeout parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		msg, ok := q.pop(time.Duration(timeout) * time.Second)
