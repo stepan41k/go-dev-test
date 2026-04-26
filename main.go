@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -109,6 +110,7 @@ func (q *Queue) push(msg string) {
 
 	if len(q.waiters) > 0 {
 		waiter := q.waiters[0]
+		q.waiters[0] = nil 
 		q.waiters = q.waiters[1:]
 		waiter <- msg
 		return
@@ -148,7 +150,7 @@ func (q *Queue) pop(timeout time.Duration) (string, bool) {
 		defer q.mu.Unlock()
 		for i, w := range q.waiters {
 			if w == ch {
-				q.waiters = append(q.waiters[:i], q.waiters[i+1:]...)
+				q.waiters = slices.Delete(q.waiters, i, i+1)
 				break
 			}
 		}
